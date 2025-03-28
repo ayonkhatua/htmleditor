@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML, CSS & JavaScript Editor</title>
+  
+  <!-- CodeMirror CSS & Autocomplete CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/hint/show-hint.min.css">
+  
+  <style>
+    /* Global Styles */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f7f7;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    header {
+      width: 100%;
+      padding: 10px;
+      height: 50px;
+      border-radius: 10px;
+      margin: 2px 5px 5px 5px;
+      background-color: #4CAF50;
+      color: white;
+      text-align: center;
+      font-size: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 20px auto;
+    }
+    /* CodeMirror Editor Style */
+    .CodeMirror {
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      height: 1000px;
+    }
+    /* Button Styles */
+    .btn {
+      padding: 10px 20px;
+      margin: 15px 5px 15px 0;
+      font-size: 16px;
+      color: #4CAF50;
+      background: none;
+      border: 2px solid #4CAF50;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      outline: none;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn:hover {
+      background-color: #4CAF50;
+      color: #fff;
+    }
+    .btn:active {
+      transform: scale(0.95);
+    }
+    /* Views Visibility */
+    .hidden {
+      display: none;
+    }
+    /* Responsive iframe style */
+    iframe {
+      width: 100%;
+      height: 400px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+    }
+    @media(max-width: 600px) {
+      .CodeMirror, iframe {
+        height: 450px;
+      }
+      .btn {
+        width: 100%;
+        text-align: center;
+      }
+    }
+    /* Modal Popup Styles */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background-color: #fff;
+      padding: 20px 30px;
+      border-radius: 5px;
+      text-align: center;
+      max-width: 90%;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    .modal-content h2 {
+      margin-top: 0;
+      color: #4CAF50;
+    }
+    /* Telegram Button inside Modal */
+    .telegram-btn {
+      padding: 10px 80px;
+      margin: 15px 5px 15px 0;
+      font-size: 16px;
+      color: #4CAF50;
+      background: none;
+      border: 2px solid #4CAF50;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      outline: none;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .telegram-btn:hover {
+      background-color: #4CAF50;
+      color: #fff;
+    }
+    .telegram-btn:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CREATE BY AYON_OFFICIAL</h1>
+  </header>
+  
+  <!-- Modal Popup on App Open -->
+  <div id="contactModal" class="modal">
+    <div class="modal-content">
+      <h2>Contact Me on Telegram</h2>
+      <a href="https://t.me/AYON_OFFICIAL" target="_blank" class="telegram-btn">Open Telegram</a>
+      <br>
+      <button class="btn" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+  
+  <!-- Editor View -->
+  <div id="editorView" class="container">
+    <!-- Removed extra newline from starting content -->
+    <textarea id="editor"><!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>My Sample App</title>
+    <style>
+      body { font-family: Arial, sans-serif; background: #fff; text-align: center; padding: 50px; }
+      h1 { color: #4CAF50; }
+    </style>
+  </head>
+  <body>
+    <h1>Hello World!</h1>
+    <p>This code is running in the preview.</p>
+  </body>
+</html></textarea>
+    <button class="btn" onclick="runCode()">Run Code</button>
+    <button class="btn" onclick="saveCode()">Save Code</button>
+  </div>
+  
+  <!-- Output Preview View -->
+  <div id="outputView" class="container hidden">
+    <div id="iframeContainer"></div>
+    <button class="btn" onclick="backToEditor()">Back to Editor</button>
+  </div>
+  
+  <!-- CodeMirror Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/hint/show-hint.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/hint/javascript-hint.min.js"></script>
+  
+  <script>
+    document.addEventListener("deviceready", function() {
+      console.log("Device is ready. Storage permissions are now available.");
+    }, false);
+
+    // Modal close function
+    function closeModal() {
+      document.getElementById("contactModal").style.display = "none";
+    }
+
+    var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+     mode: "htmlmixed",
+     lineNumbers: true,
+     matchBrackets: true,
+     autoCloseBrackets: true,
+     electricChars: false, // Disable automatic electric indenting
+     indentUnit: 2,        // Set indent unit as needed
+     extraKeys: {
+     "Enter": function(cm) {
+      cm.replaceSelection("\n", "end");  // Simply insert a newline
+    },
+    "Ctrl-Space": "autocomplete"
+  },
+  lineSeparator: "\n"
+});
+
+    
+    // Trigger autocomplete on every input (except when space is pressed)
+    editor.on("inputRead", function(cm, change) {
+      if (change.text && change.text[0] !== " ") {
+        cm.showHint();
+      }
+    });
+    
+    // Function to run code: hides editor view and shows output view in an iframe
+    function runCode() {
+      var code = editor.getValue();
+      
+      // Create a new iframe element
+      var outputFrame = document.createElement('iframe');
+      
+      // Clear previous iframe if any
+      var container = document.getElementById("iframeContainer");
+      container.innerHTML = "";
+      container.appendChild(outputFrame);
+      
+      // Write code into the iframe for execution
+      outputFrame.contentDocument.open();
+      outputFrame.contentDocument.write(code);
+      outputFrame.contentDocument.close();
+      
+      // Toggle views
+      document.getElementById("editorView").classList.add("hidden");
+      document.getElementById("outputView").classList.remove("hidden");
+    }
+    
+    // Function to return to the editor view
+    function backToEditor() {
+      document.getElementById("outputView").classList.add("hidden");
+      document.getElementById("editorView").classList.remove("hidden");
+    }
+    
+    // Function to save code as a file and trigger download
+    function saveCode() {
+      var code = editor.getValue();
+      var blob = new Blob([code], {type: "text/html"});
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "myCode.html"; // File name can be changed as needed
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  </script>
+</body>
+</html>
